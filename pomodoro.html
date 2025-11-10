@@ -104,8 +104,48 @@
             background-color: #3b82f6;
         }
 
-        .stats {
+        .tasks-section {
             margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+        }
+
+        .tasks-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #9ca3af;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .task-input {
+            background-color: #1f2937;
+            color: white;
+            padding: 0.75rem 1rem;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .task-input::placeholder {
+            color: #6b7280;
+        }
+
+        .stats {
+            margin-top: 2rem;
             padding-top: 2rem;
             border-top: 1px solid #374151;
         }
@@ -173,6 +213,15 @@
             <button id="resetBtn">Reset</button>
         </div>
 
+        <div class="tasks-section">
+            <div class="tasks-title">Today's Focus Tasks</div>
+            <div class="task-list">
+                <input type="text" class="task-input" id="task1" placeholder="Task 1" maxlength="60">
+                <input type="text" class="task-input" id="task2" placeholder="Task 2" maxlength="60">
+                <input type="text" class="task-input" id="task3" placeholder="Task 3" maxlength="60">
+            </div>
+        </div>
+
         <div class="stats">
             <div class="stats-item">
                 <span class="stats-value" id="pomodoroCount">0</span>
@@ -190,9 +239,9 @@
     <script>
         // Timer configuration (in minutes)
         const TIMER_MODES = {
-            pomodoro: { duration: 25, label: 'Focus Time' },
-            short: { duration: 5, label: 'Short Break' },
-            long: { duration: 15, label: 'Long Break' }
+            pomodoro: { duration: 25, label: 'Focus Time', useTask: true },
+            short: { duration: 5, label: 'Short Break', useTask: false },
+            long: { duration: 15, label: 'Long Break', useTask: false }
         };
 
         // State
@@ -202,6 +251,7 @@
         let timerInterval = null;
         let pomodoroCount = 0;
         let totalMinutes = 0;
+        let tasks = ['', '', ''];
 
         // DOM elements
         const timerDisplay = document.getElementById('timer');
@@ -211,6 +261,11 @@
         const modeButtons = document.querySelectorAll('.mode-btn');
         const pomodoroCountDisplay = document.getElementById('pomodoroCount');
         const totalTimeDisplay = document.getElementById('totalTime');
+        const taskInputs = [
+            document.getElementById('task1'),
+            document.getElementById('task2'),
+            document.getElementById('task3')
+        ];
 
         // Load saved stats from localStorage
         function loadStats() {
@@ -219,7 +274,9 @@
                 const stats = JSON.parse(saved);
                 pomodoroCount = stats.pomodoroCount || 0;
                 totalMinutes = stats.totalMinutes || 0;
+                tasks = stats.tasks || ['', '', ''];
                 updateStatsDisplay();
+                updateTasksDisplay();
             }
         }
 
@@ -227,8 +284,25 @@
         function saveStats() {
             localStorage.setItem('pomodoroStats', JSON.stringify({
                 pomodoroCount,
-                totalMinutes
+                totalMinutes,
+                tasks
             }));
+        }
+
+        // Update tasks display
+        function updateTasksDisplay() {
+            taskInputs.forEach((input, index) => {
+                input.value = tasks[index];
+            });
+        }
+
+        // Save tasks
+        function saveTasks() {
+            taskInputs.forEach((input, index) => {
+                tasks[index] = input.value;
+            });
+            saveStats();
+            updateDisplay(); // Update label when task changes
         }
 
         // Format time as MM:SS
@@ -241,7 +315,14 @@
         // Update timer display
         function updateDisplay() {
             timerDisplay.textContent = formatTime(timeLeft);
-            labelDisplay.textContent = TIMER_MODES[currentMode].label;
+
+            // Update label with task name if in pomodoro mode and task 1 is filled
+            let label = TIMER_MODES[currentMode].label;
+            if (TIMER_MODES[currentMode].useTask && tasks[0].trim()) {
+                label = `${tasks[0]} Focus Time`;
+            }
+            labelDisplay.textContent = label;
+
             document.title = `${formatTime(timeLeft)} - Pomodoro Timer`;
         }
 
@@ -356,6 +437,11 @@
             btn.addEventListener('click', () => {
                 switchMode(btn.dataset.mode);
             });
+        });
+
+        taskInputs.forEach(input => {
+            input.addEventListener('input', saveTasks);
+            input.addEventListener('blur', saveTasks);
         });
 
         // Initialize
