@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #111827;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 32rem;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 3rem;
+        }
+
+        .timer-display {
+            font-size: 6rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.1em;
+        }
+
+        .timer-label {
+            font-size: 1.5rem;
+            color: #9ca3af;
+            margin-bottom: 3rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            background-color: #1f2937;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background-color: #374151;
+        }
+
+        button:active {
+            background-color: #4b5563;
+        }
+
+        button.primary {
+            background-color: #3b82f6;
+        }
+
+        button.primary:hover {
+            background-color: #2563eb;
+        }
+
+        button.primary:active {
+            background-color: #1d4ed8;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .mode-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .mode-btn.active {
+            background-color: #3b82f6;
+        }
+
+        .stats {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+        }
+
+        .stats-item {
+            display: inline-block;
+            margin: 0 1.5rem;
+            color: #9ca3af;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            display: block;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        @media (max-width: 640px) {
+            .timer-display {
+                font-size: 4rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🍅 Pomodoro Timer</h1>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="pomodoro">Pomodoro</button>
+            <button class="mode-btn" data-mode="short">Short Break</button>
+            <button class="mode-btn" data-mode="long">Long Break</button>
+        </div>
+
+        <div class="timer-display" id="timer">25:00</div>
+        <div class="timer-label" id="label">Focus Time</div>
+
+        <div class="controls">
+            <button class="primary" id="startBtn">Start</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+
+        <div class="stats">
+            <div class="stats-item">
+                <span class="stats-value" id="pomodoroCount">0</span>
+                <span>Pomodoros</span>
+            </div>
+            <div class="stats-item">
+                <span class="stats-value" id="totalTime">0</span>
+                <span>Minutes</span>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Home</a>
+    </div>
+
+    <script>
+        // Timer configuration (in minutes)
+        const TIMER_MODES = {
+            pomodoro: { duration: 25, label: 'Focus Time' },
+            short: { duration: 5, label: 'Short Break' },
+            long: { duration: 15, label: 'Long Break' }
+        };
+
+        // State
+        let currentMode = 'pomodoro';
+        let timeLeft = TIMER_MODES[currentMode].duration * 60; // in seconds
+        let isRunning = false;
+        let timerInterval = null;
+        let pomodoroCount = 0;
+        let totalMinutes = 0;
+
+        // DOM elements
+        const timerDisplay = document.getElementById('timer');
+        const labelDisplay = document.getElementById('label');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const pomodoroCountDisplay = document.getElementById('pomodoroCount');
+        const totalTimeDisplay = document.getElementById('totalTime');
+
+        // Load saved stats from localStorage
+        function loadStats() {
+            const saved = localStorage.getItem('pomodoroStats');
+            if (saved) {
+                const stats = JSON.parse(saved);
+                pomodoroCount = stats.pomodoroCount || 0;
+                totalMinutes = stats.totalMinutes || 0;
+                updateStatsDisplay();
+            }
+        }
+
+        // Save stats to localStorage
+        function saveStats() {
+            localStorage.setItem('pomodoroStats', JSON.stringify({
+                pomodoroCount,
+                totalMinutes
+            }));
+        }
+
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update timer display
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeLeft);
+            labelDisplay.textContent = TIMER_MODES[currentMode].label;
+            document.title = `${formatTime(timeLeft)} - Pomodoro Timer`;
+        }
+
+        // Update stats display
+        function updateStatsDisplay() {
+            pomodoroCountDisplay.textContent = pomodoroCount;
+            totalTimeDisplay.textContent = totalMinutes;
+        }
+
+        // Start/Pause timer
+        function toggleTimer() {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        // Start timer
+        function startTimer() {
+            isRunning = true;
+            startBtn.textContent = 'Pause';
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    completeTimer();
+                }
+            }, 1000);
+        }
+
+        // Pause timer
+        function pauseTimer() {
+            isRunning = false;
+            startBtn.textContent = 'Resume';
+            clearInterval(timerInterval);
+        }
+
+        // Complete timer
+        function completeTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            startBtn.textContent = 'Start';
+
+            // Play notification sound (browser notification)
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Pomodoro Timer', {
+                    body: `${TIMER_MODES[currentMode].label} completed!`,
+                    icon: '🍅'
+                });
+            }
+
+            // Update stats if it was a pomodoro
+            if (currentMode === 'pomodoro') {
+                pomodoroCount++;
+                totalMinutes += TIMER_MODES[currentMode].duration;
+                updateStatsDisplay();
+                saveStats();
+            }
+
+            // Alert user
+            alert(`${TIMER_MODES[currentMode].label} completed!`);
+
+            // Auto-switch to break or back to pomodoro
+            if (currentMode === 'pomodoro') {
+                switchMode(pomodoroCount % 4 === 0 ? 'long' : 'short');
+            } else {
+                switchMode('pomodoro');
+            }
+        }
+
+        // Reset timer
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            startBtn.textContent = 'Start';
+            timeLeft = TIMER_MODES[currentMode].duration * 60;
+            updateDisplay();
+        }
+
+        // Switch mode
+        function switchMode(mode) {
+            if (isRunning) {
+                pauseTimer();
+            }
+
+            currentMode = mode;
+            timeLeft = TIMER_MODES[currentMode].duration * 60;
+
+            // Update active button
+            modeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            updateDisplay();
+        }
+
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', toggleTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchMode(btn.dataset.mode);
+            });
+        });
+
+        // Initialize
+        loadStats();
+        updateDisplay();
+        requestNotificationPermission();
+    </script>
+</body>
+
+</html>
