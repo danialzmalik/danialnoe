@@ -154,6 +154,18 @@ button.primary:active {
     background-color: #1d4ed8;
 }
 
+button.end-early-btn {
+    background-color: #f59e0b;
+}
+
+button.end-early-btn:hover {
+    background-color: #d97706;
+}
+
+button.end-early-btn:active {
+    background-color: #b45309;
+}
+
 /* Mode Selector */
 .mode-selector {
     display: flex;

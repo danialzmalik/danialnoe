@@ -27,6 +27,7 @@
         <div class="controls">
             <button class="primary" id="startBtn">Start</button>
             <button id="resetBtn">Reset</button>
+            <button id="endEarlyBtn" class="end-early-btn" style="display: none;">End Early</button>
         </div>
 
         <div class="tasks-section">
@@ -124,6 +125,7 @@
         let timeLeft = TIMER_MODES[currentMode].duration * 60; // in seconds
         let isRunning = false;
         let timerInterval = null;
+        let sessionStartTime = null; // Track when session started
         let pomodoroCount = 0;
         let totalMinutes = 0;
         let tasks = ['', '', '', '', '', ''];
@@ -134,6 +136,7 @@
         const labelDisplay = document.getElementById('label');
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const endEarlyBtn = document.getElementById('endEarlyBtn');
         const resetStatsBtn = document.getElementById('resetStatsBtn');
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsModal = document.getElementById('settingsModal');
@@ -296,6 +299,8 @@
         function startTimer() {
             isRunning = true;
             startBtn.textContent = 'Pause';
+            sessionStartTime = Date.now(); // Record start time
+            endEarlyBtn.style.display = 'inline-block'; // Show end early button
 
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
@@ -312,6 +317,7 @@
             isRunning = false;
             startBtn.textContent = 'Resume';
             clearInterval(timerInterval);
+            endEarlyBtn.style.display = 'none'; // Hide end early button when paused
         }
 
         // Complete timer
@@ -319,6 +325,8 @@
             clearInterval(timerInterval);
             isRunning = false;
             startBtn.textContent = 'Start';
+            endEarlyBtn.style.display = 'none'; // Hide end early button
+            sessionStartTime = null; // Reset session start time
 
             // Play notification sound (browser notification)
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -352,6 +360,39 @@
             clearInterval(timerInterval);
             isRunning = false;
             startBtn.textContent = 'Start';
+            endEarlyBtn.style.display = 'none'; // Hide end early button
+            sessionStartTime = null; // Reset session start time
+            timeLeft = TIMER_MODES[currentMode].duration * 60;
+            updateDisplay();
+        }
+
+        // End early and add time spent
+        function endEarly() {
+            if (!isRunning || !sessionStartTime) return;
+
+            // Calculate time spent in seconds
+            const timeSpentSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const timeSpentMinutes = Math.round(timeSpentSeconds / 60);
+
+            // Stop the timer
+            clearInterval(timerInterval);
+            isRunning = false;
+            startBtn.textContent = 'Start';
+            endEarlyBtn.style.display = 'none';
+            sessionStartTime = null;
+
+            // Only add time for pomodoro sessions
+            if (currentMode === 'pomodoro' && timeSpentMinutes > 0) {
+                totalMinutes += timeSpentMinutes;
+                updateStatsDisplay();
+                saveStats();
+
+                alert(`Session ended early. Added ${timeSpentMinutes} minute${timeSpentMinutes !== 1 ? 's' : ''} to your total.`);
+            } else {
+                alert('Session ended.');
+            }
+
+            // Reset timer to full duration
             timeLeft = TIMER_MODES[currentMode].duration * 60;
             updateDisplay();
         }
@@ -435,6 +476,7 @@
         startBtn.addEventListener('click', toggleTimer);
         resetBtn.addEventListener('click', resetTimer);
         resetStatsBtn.addEventListener('click', resetStats);
+        endEarlyBtn.addEventListener('click', endEarly);
         settingsBtn.addEventListener('click', openSettings);
         closeModal.addEventListener('click', closeSettings);
         saveSettings.addEventListener('click', saveSettingsFromModal);
