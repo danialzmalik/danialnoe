@@ -29,29 +29,35 @@
         <div class="tasks-section">
             <div class="tasks-title">Today's Focus Tasks</div>
             <div class="task-list">
-                <div class="task-item">
+                <div class="task-item" draggable="true" data-index="0">
+                    <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="task-checkbox" id="checkbox1">
                     <input type="text" class="task-input" id="task1" placeholder="Task 1" maxlength="60">
                 </div>
-                <div class="task-item">
+                <div class="task-item" draggable="true" data-index="1">
+                    <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="task-checkbox" id="checkbox2">
                     <input type="text" class="task-input" id="task2" placeholder="Task 2" maxlength="60">
                 </div>
-                <div class="task-item">
+                <div class="task-item" draggable="true" data-index="2">
+                    <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="task-checkbox" id="checkbox3">
                     <input type="text" class="task-input" id="task3" placeholder="Task 3" maxlength="60">
                 </div>
-                <div class="task-item task-item-secondary">
+                <div class="task-item task-item-secondary" draggable="true" data-index="3">
+                    <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="task-checkbox" id="checkbox4">
                     <input type="text" class="task-input task-input-secondary" id="task4" placeholder="Task 4"
                         maxlength="60">
                 </div>
-                <div class="task-item task-item-secondary">
+                <div class="task-item task-item-secondary" draggable="true" data-index="4">
+                    <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="task-checkbox" id="checkbox5">
                     <input type="text" class="task-input task-input-secondary" id="task5" placeholder="Task 5"
                         maxlength="60">
                 </div>
-                <div class="task-item task-item-secondary">
+                <div class="task-item task-item-secondary" draggable="true" data-index="5">
+                    <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="task-checkbox" id="checkbox6">
                     <input type="text" class="task-input task-input-secondary" id="task6" placeholder="Task 6"
                         maxlength="60">
@@ -334,6 +340,78 @@
                 saveStats();
                 updateTaskHighlight();
                 updateDisplay(); // Update timer label if needed
+            });
+        });
+
+        // Drag and drop functionality
+        let draggedElement = null;
+        let draggedIndex = null;
+
+        const taskItems = document.querySelectorAll('.task-item');
+
+        taskItems.forEach((item, index) => {
+            item.addEventListener('dragstart', (e) => {
+                draggedElement = item;
+                draggedIndex = index;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+                draggedElement = null;
+                draggedIndex = null;
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedElement && draggedElement !== item) {
+                    const taskList = item.parentNode;
+                    const allItems = [...taskList.querySelectorAll('.task-item')];
+                    const draggedIdx = allItems.indexOf(draggedElement);
+                    const targetIdx = allItems.indexOf(item);
+
+                    if (draggedIdx < targetIdx) {
+                        item.parentNode.insertBefore(draggedElement, item.nextSibling);
+                    } else {
+                        item.parentNode.insertBefore(draggedElement, item);
+                    }
+                }
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedElement && draggedElement !== item) {
+                    // Get current order from DOM
+                    const taskList = document.querySelector('.task-list');
+                    const allItems = [...taskList.querySelectorAll('.task-item')];
+
+                    // Create new arrays based on DOM order
+                    const newTasks = [];
+                    const newTaskChecked = [];
+
+                    allItems.forEach((taskItem) => {
+                        const oldIndex = parseInt(taskItem.dataset.index);
+                        newTasks.push(tasks[oldIndex]);
+                        newTaskChecked.push(taskChecked[oldIndex]);
+                    });
+
+                    // Update state
+                    tasks = newTasks;
+                    taskChecked = newTaskChecked;
+
+                    // Update data-index attributes
+                    allItems.forEach((taskItem, newIndex) => {
+                        taskItem.dataset.index = newIndex;
+                    });
+
+                    // Save and update display
+                    saveStats();
+                    updateTaskHighlight();
+                    updateDisplay();
+                }
             });
         });
 
