@@ -29,9 +29,39 @@
         <div class="tasks-section">
             <div class="tasks-title">Today's Focus Tasks</div>
             <div class="task-list">
-                <input type="text" class="task-input" id="task1" placeholder="Task 1" maxlength="60">
-                <input type="text" class="task-input" id="task2" placeholder="Task 2" maxlength="60">
-                <input type="text" class="task-input" id="task3" placeholder="Task 3" maxlength="60">
+                <div class="task-item" draggable="true" data-index="0">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="task-checkbox" id="checkbox1">
+                    <input type="text" class="task-input" id="task1" placeholder="Task 1" maxlength="60">
+                </div>
+                <div class="task-item" draggable="true" data-index="1">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="task-checkbox" id="checkbox2">
+                    <input type="text" class="task-input" id="task2" placeholder="Task 2" maxlength="60">
+                </div>
+                <div class="task-item" draggable="true" data-index="2">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="task-checkbox" id="checkbox3">
+                    <input type="text" class="task-input" id="task3" placeholder="Task 3" maxlength="60">
+                </div>
+                <div class="task-item task-item-secondary" draggable="true" data-index="3">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="task-checkbox" id="checkbox4">
+                    <input type="text" class="task-input task-input-secondary" id="task4" placeholder="Task 4"
+                        maxlength="60">
+                </div>
+                <div class="task-item task-item-secondary" draggable="true" data-index="4">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="task-checkbox" id="checkbox5">
+                    <input type="text" class="task-input task-input-secondary" id="task5" placeholder="Task 5"
+                        maxlength="60">
+                </div>
+                <div class="task-item task-item-secondary" draggable="true" data-index="5">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="task-checkbox" id="checkbox6">
+                    <input type="text" class="task-input task-input-secondary" id="task6" placeholder="Task 6"
+                        maxlength="60">
+                </div>
             </div>
         </div>
 
@@ -64,7 +94,8 @@
         let timerInterval = null;
         let pomodoroCount = 0;
         let totalMinutes = 0;
-        let tasks = ['', '', ''];
+        let tasks = ['', '', '', '', '', ''];
+        let taskChecked = [false, false, false, false, false, false];
 
         // DOM elements
         const timerDisplay = document.getElementById('timer');
@@ -77,7 +108,18 @@
         const taskInputs = [
             document.getElementById('task1'),
             document.getElementById('task2'),
-            document.getElementById('task3')
+            document.getElementById('task3'),
+            document.getElementById('task4'),
+            document.getElementById('task5'),
+            document.getElementById('task6')
+        ];
+        const taskCheckboxes = [
+            document.getElementById('checkbox1'),
+            document.getElementById('checkbox2'),
+            document.getElementById('checkbox3'),
+            document.getElementById('checkbox4'),
+            document.getElementById('checkbox5'),
+            document.getElementById('checkbox6')
         ];
 
         // Load saved stats from localStorage
@@ -87,9 +129,11 @@
                 const stats = JSON.parse(saved);
                 pomodoroCount = stats.pomodoroCount || 0;
                 totalMinutes = stats.totalMinutes || 0;
-                tasks = stats.tasks || ['', '', ''];
+                tasks = stats.tasks || ['', '', '', '', '', ''];
+                taskChecked = stats.taskChecked || [false, false, false, false, false, false];
                 updateStatsDisplay();
                 updateTasksDisplay();
+                updateTaskHighlight();
             }
         }
 
@@ -98,14 +142,44 @@
             localStorage.setItem('pomodoroStats', JSON.stringify({
                 pomodoroCount,
                 totalMinutes,
-                tasks
+                tasks,
+                taskChecked
             }));
         }
 
         // Update tasks display
         function updateTasksDisplay() {
             taskInputs.forEach((input, index) => {
-                input.value = tasks[index];
+                input.value = tasks[index] || '';
+                taskCheckboxes[index].checked = taskChecked[index];
+            });
+            updateTaskHighlight();
+        }
+
+        // Update task highlighting
+        function updateTaskHighlight() {
+            const taskItems = document.querySelectorAll('.task-item');
+
+            // Remove all highlights first
+            taskItems.forEach(item => {
+                item.classList.remove('task-highlight');
+            });
+
+            // Find first unchecked task with content and highlight it
+            for (let i = 0; i < taskChecked.length; i++) {
+                if (!taskChecked[i] && tasks[i].trim()) {
+                    taskItems[i].classList.add('task-highlight');
+                    break;
+                }
+            }
+
+            // Update checked styling
+            taskItems.forEach((item, index) => {
+                if (taskChecked[index]) {
+                    item.classList.add('checked');
+                } else {
+                    item.classList.remove('checked');
+                }
             });
         }
 
@@ -129,12 +203,15 @@
         function updateDisplay() {
             timerDisplay.textContent = formatTime(timeLeft);
 
-            // Update label with task name if in pomodoro mode and task 1 is filled
+            // Find first unchecked task
+            let activeTaskIndex = taskChecked.findIndex((checked, i) => !checked && tasks[i].trim());
+
             let label = TIMER_MODES[currentMode].label;
-            if (TIMER_MODES[currentMode].useTask && tasks[0].trim()) {
-                label = `${tasks[0]} Focus Time`;
+            if (TIMER_MODES[currentMode].useTask && activeTaskIndex !== -1) {
+                labelDisplay.innerHTML = `<span class="task-highlight">${tasks[activeTaskIndex]}</span> Focus Time`;
+            } else {
+                labelDisplay.textContent = label;
             }
-            labelDisplay.textContent = label;
 
             document.title = `${formatTime(timeLeft)} - Pomodoro Timer`;
         }
@@ -255,6 +332,87 @@
         taskInputs.forEach(input => {
             input.addEventListener('input', saveTasks);
             input.addEventListener('blur', saveTasks);
+        });
+
+        taskCheckboxes.forEach((checkbox, index) => {
+            checkbox.addEventListener('change', () => {
+                taskChecked[index] = checkbox.checked;
+                saveStats();
+                updateTaskHighlight();
+                updateDisplay(); // Update timer label if needed
+            });
+        });
+
+        // Drag and drop functionality
+        let draggedElement = null;
+        let draggedIndex = null;
+
+        const taskItems = document.querySelectorAll('.task-item');
+
+        taskItems.forEach((item, index) => {
+            item.addEventListener('dragstart', (e) => {
+                draggedElement = item;
+                draggedIndex = index;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+                draggedElement = null;
+                draggedIndex = null;
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedElement && draggedElement !== item) {
+                    const taskList = item.parentNode;
+                    const allItems = [...taskList.querySelectorAll('.task-item')];
+                    const draggedIdx = allItems.indexOf(draggedElement);
+                    const targetIdx = allItems.indexOf(item);
+
+                    if (draggedIdx < targetIdx) {
+                        item.parentNode.insertBefore(draggedElement, item.nextSibling);
+                    } else {
+                        item.parentNode.insertBefore(draggedElement, item);
+                    }
+                }
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedElement && draggedElement !== item) {
+                    // Get current order from DOM
+                    const taskList = document.querySelector('.task-list');
+                    const allItems = [...taskList.querySelectorAll('.task-item')];
+
+                    // Create new arrays based on DOM order
+                    const newTasks = [];
+                    const newTaskChecked = [];
+
+                    allItems.forEach((taskItem) => {
+                        const oldIndex = parseInt(taskItem.dataset.index);
+                        newTasks.push(tasks[oldIndex]);
+                        newTaskChecked.push(taskChecked[oldIndex]);
+                    });
+
+                    // Update state
+                    tasks = newTasks;
+                    taskChecked = newTaskChecked;
+
+                    // Update data-index attributes
+                    allItems.forEach((taskItem, newIndex) => {
+                        taskItem.dataset.index = newIndex;
+                    });
+
+                    // Save and update display
+                    saveStats();
+                    updateTaskHighlight();
+                    updateDisplay();
+                }
+            });
         });
 
         // Initialize
