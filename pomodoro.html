@@ -10,7 +10,10 @@
 
 <body>
     <div class="container pomodoro">
-        <h1>🍅 Pomodoro Timer</h1>
+        <div class="header-with-settings">
+            <h1>🍅 Pomodoro Timer</h1>
+            <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
+        </div>
 
         <div class="mode-selector">
             <button class="mode-btn active" data-mode="pomodoro">Pomodoro</button>
@@ -24,6 +27,7 @@
         <div class="controls">
             <button class="primary" id="startBtn">Start</button>
             <button id="resetBtn">Reset</button>
+            <button id="endEarlyBtn" class="end-early-btn" style="display: none;">End Early</button>
         </div>
 
         <div class="tasks-section">
@@ -74,14 +78,43 @@
                 <span class="stats-value" id="totalTime">0</span>
                 <span>Minutes</span>
             </div>
+            <button id="resetStatsBtn" class="reset-stats-btn" title="Reset statistics">Reset Stats</button>
         </div>
 
         <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Timer Settings</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <label for="pomodoroDuration">Pomodoro Duration (minutes):</label>
+                    <input type="number" id="pomodoroDuration" min="1" max="60" value="25">
+                </div>
+                <div class="setting-item">
+                    <label for="shortBreakDuration">Short Break Duration (minutes):</label>
+                    <input type="number" id="shortBreakDuration" min="1" max="30" value="5">
+                </div>
+                <div class="setting-item">
+                    <label for="longBreakDuration">Long Break Duration (minutes):</label>
+                    <input type="number" id="longBreakDuration" min="1" max="60" value="15">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettings" class="primary">Save Settings</button>
+                <button id="cancelSettings">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Timer configuration (in minutes)
-        const TIMER_MODES = {
+        // Timer configuration (in minutes) - will be loaded from localStorage
+        let TIMER_MODES = {
             pomodoro: { duration: 25, label: 'Focus Time', useTask: true },
             short: { duration: 5, label: 'Short Break', useTask: false },
             long: { duration: 15, label: 'Long Break', useTask: false }
@@ -92,6 +125,7 @@
         let timeLeft = TIMER_MODES[currentMode].duration * 60; // in seconds
         let isRunning = false;
         let timerInterval = null;
+        let sessionStartTime = null; // Track when session started
         let pomodoroCount = 0;
         let totalMinutes = 0;
         let tasks = ['', '', '', '', '', ''];
@@ -102,6 +136,16 @@
         const labelDisplay = document.getElementById('label');
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const endEarlyBtn = document.getElementById('endEarlyBtn');
+        const resetStatsBtn = document.getElementById('resetStatsBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeModal = document.getElementById('closeModal');
+        const saveSettings = document.getElementById('saveSettings');
+        const cancelSettings = document.getElementById('cancelSettings');
+        const pomodoroDurationInput = document.getElementById('pomodoroDuration');
+        const shortBreakDurationInput = document.getElementById('shortBreakDuration');
+        const longBreakDurationInput = document.getElementById('longBreakDuration');
         const modeButtons = document.querySelectorAll('.mode-btn');
         const pomodoroCountDisplay = document.getElementById('pomodoroCount');
         const totalTimeDisplay = document.getElementById('totalTime');
@@ -121,6 +165,26 @@
             document.getElementById('checkbox5'),
             document.getElementById('checkbox6')
         ];
+
+        // Load timer settings from localStorage
+        function loadTimerSettings() {
+            const saved = localStorage.getItem('timerSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                TIMER_MODES.pomodoro.duration = settings.pomodoro || 25;
+                TIMER_MODES.short.duration = settings.short || 5;
+                TIMER_MODES.long.duration = settings.long || 15;
+            }
+        }
+
+        // Save timer settings to localStorage
+        function saveTimerSettings() {
+            localStorage.setItem('timerSettings', JSON.stringify({
+                pomodoro: TIMER_MODES.pomodoro.duration,
+                short: TIMER_MODES.short.duration,
+                long: TIMER_MODES.long.duration
+            }));
+        }
 
         // Load saved stats from localStorage
         function loadStats() {
@@ -235,6 +299,8 @@
         function startTimer() {
             isRunning = true;
             startBtn.textContent = 'Pause';
+            sessionStartTime = Date.now(); // Record start time
+            endEarlyBtn.style.display = 'inline-block'; // Show end early button
 
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
@@ -251,6 +317,7 @@
             isRunning = false;
             startBtn.textContent = 'Resume';
             clearInterval(timerInterval);
+            endEarlyBtn.style.display = 'none'; // Hide end early button when paused
         }
 
         // Complete timer
@@ -258,6 +325,8 @@
             clearInterval(timerInterval);
             isRunning = false;
             startBtn.textContent = 'Start';
+            endEarlyBtn.style.display = 'none'; // Hide end early button
+            sessionStartTime = null; // Reset session start time
 
             // Play notification sound (browser notification)
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -291,8 +360,51 @@
             clearInterval(timerInterval);
             isRunning = false;
             startBtn.textContent = 'Start';
+            endEarlyBtn.style.display = 'none'; // Hide end early button
+            sessionStartTime = null; // Reset session start time
             timeLeft = TIMER_MODES[currentMode].duration * 60;
             updateDisplay();
+        }
+
+        // End early and add time spent
+        function endEarly() {
+            if (!isRunning || !sessionStartTime) return;
+
+            // Calculate time spent in seconds
+            const timeSpentSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const timeSpentMinutes = Math.round(timeSpentSeconds / 60);
+
+            // Stop the timer
+            clearInterval(timerInterval);
+            isRunning = false;
+            startBtn.textContent = 'Start';
+            endEarlyBtn.style.display = 'none';
+            sessionStartTime = null;
+
+            // Only add time for pomodoro sessions
+            if (currentMode === 'pomodoro' && timeSpentMinutes > 0) {
+                totalMinutes += timeSpentMinutes;
+                updateStatsDisplay();
+                saveStats();
+
+                alert(`Session ended early. Added ${timeSpentMinutes} minute${timeSpentMinutes !== 1 ? 's' : ''} to your total.`);
+            } else {
+                alert('Session ended.');
+            }
+
+            // Reset timer to full duration
+            timeLeft = TIMER_MODES[currentMode].duration * 60;
+            updateDisplay();
+        }
+
+        // Reset stats
+        function resetStats() {
+            if (confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
+                pomodoroCount = 0;
+                totalMinutes = 0;
+                updateStatsDisplay();
+                saveStats();
+            }
         }
 
         // Switch mode
@@ -312,6 +424,47 @@
             updateDisplay();
         }
 
+        // Open settings modal
+        function openSettings() {
+            pomodoroDurationInput.value = TIMER_MODES.pomodoro.duration;
+            shortBreakDurationInput.value = TIMER_MODES.short.duration;
+            longBreakDurationInput.value = TIMER_MODES.long.duration;
+            settingsModal.style.display = 'flex';
+        }
+
+        // Close settings modal
+        function closeSettings() {
+            settingsModal.style.display = 'none';
+        }
+
+        // Save settings from modal
+        function saveSettingsFromModal() {
+            const newPomodoro = parseInt(pomodoroDurationInput.value);
+            const newShort = parseInt(shortBreakDurationInput.value);
+            const newLong = parseInt(longBreakDurationInput.value);
+
+            if (newPomodoro >= 1 && newPomodoro <= 60 &&
+                newShort >= 1 && newShort <= 30 &&
+                newLong >= 1 && newLong <= 60) {
+
+                TIMER_MODES.pomodoro.duration = newPomodoro;
+                TIMER_MODES.short.duration = newShort;
+                TIMER_MODES.long.duration = newLong;
+
+                saveTimerSettings();
+
+                // Reset current timer to new duration
+                if (!isRunning) {
+                    timeLeft = TIMER_MODES[currentMode].duration * 60;
+                    updateDisplay();
+                }
+
+                closeSettings();
+            } else {
+                alert('Please enter valid durations within the allowed ranges.');
+            }
+        }
+
         // Request notification permission
         function requestNotificationPermission() {
             if ('Notification' in window && Notification.permission === 'default') {
@@ -322,6 +475,19 @@
         // Event listeners
         startBtn.addEventListener('click', toggleTimer);
         resetBtn.addEventListener('click', resetTimer);
+        resetStatsBtn.addEventListener('click', resetStats);
+        endEarlyBtn.addEventListener('click', endEarly);
+        settingsBtn.addEventListener('click', openSettings);
+        closeModal.addEventListener('click', closeSettings);
+        saveSettings.addEventListener('click', saveSettingsFromModal);
+        cancelSettings.addEventListener('click', closeSettings);
+
+        // Close modal when clicking outside
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                closeSettings();
+            }
+        });
 
         modeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -416,6 +582,7 @@
         });
 
         // Initialize
+        loadTimerSettings();
         loadStats();
         updateDisplay();
         requestNotificationPermission();
