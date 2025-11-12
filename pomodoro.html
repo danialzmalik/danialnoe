@@ -32,6 +32,12 @@
                 <input type="text" class="task-input" id="task1" placeholder="Task 1" maxlength="60">
                 <input type="text" class="task-input" id="task2" placeholder="Task 2" maxlength="60">
                 <input type="text" class="task-input" id="task3" placeholder="Task 3" maxlength="60">
+                <input type="text" class="task-input task-input-secondary" id="task4" placeholder="Task 4"
+                    maxlength="60">
+                <input type="text" class="task-input task-input-secondary" id="task5" placeholder="Task 5"
+                    maxlength="60">
+                <input type="text" class="task-input task-input-secondary" id="task6" placeholder="Task 6"
+                    maxlength="60">
             </div>
         </div>
 
@@ -64,7 +70,7 @@
         let timerInterval = null;
         let pomodoroCount = 0;
         let totalMinutes = 0;
-        let tasks = ['', '', ''];
+        let tasks = ['', '', '', '', '', ''];
 
         // DOM elements
         const timerDisplay = document.getElementById('timer');
@@ -77,7 +83,10 @@
         const taskInputs = [
             document.getElementById('task1'),
             document.getElementById('task2'),
-            document.getElementById('task3')
+            document.getElementById('task3'),
+            document.getElementById('task4'),
+            document.getElementById('task5'),
+            document.getElementById('task6')
         ];
 
         // Load saved stats from localStorage
@@ -87,7 +96,7 @@
                 const stats = JSON.parse(saved);
                 pomodoroCount = stats.pomodoroCount || 0;
                 totalMinutes = stats.totalMinutes || 0;
-                tasks = stats.tasks || ['', '', ''];
+                tasks = stats.tasks || ['', '', '', '', '', ''];
                 updateStatsDisplay();
                 updateTasksDisplay();
             }
@@ -105,7 +114,7 @@
         // Update tasks display
         function updateTasksDisplay() {
             taskInputs.forEach((input, index) => {
-                input.value = tasks[index];
+                input.value = tasks[index] || '';
             });
         }
 
@@ -132,9 +141,10 @@
             // Update label with task name if in pomodoro mode and task 1 is filled
             let label = TIMER_MODES[currentMode].label;
             if (TIMER_MODES[currentMode].useTask && tasks[0].trim()) {
-                label = `${tasks[0]} Focus Time`;
+                labelDisplay.innerHTML = `<span class="task-highlight">${tasks[0]}</span> Focus Time`;
+            } else {
+                labelDisplay.textContent = label;
             }
-            labelDisplay.textContent = label;
 
             document.title = `${formatTime(timeLeft)} - Pomodoro Timer`;
         }

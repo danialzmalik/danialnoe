@@ -83,6 +83,12 @@ a:hover {
     margin-bottom: 3rem;
 }
 
+.task-highlight {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.6rem;
+}
+
 /* Controls */
 .controls {
     display: flex;
@@ -179,6 +185,22 @@ button.primary:active {
 
 .task-input::placeholder {
     color: #6b7280;
+}
+
+/* Secondary tasks - greyed out for less emphasis */
+.task-input-secondary {
+    background-color: #1a1f2e;
+    opacity: 0.6;
+    border-color: #2d3748;
+}
+
+.task-input-secondary:focus {
+    opacity: 1;
+    border-color: #3b82f6;
+}
+
+.task-input-secondary::placeholder {
+    color: #4b5563;
 }
 
 /* Stats */
