@@ -74,6 +74,7 @@
                 <span class="stats-value" id="totalTime">0</span>
                 <span>Minutes</span>
             </div>
+            <button id="resetStatsBtn" class="reset-stats-btn" title="Reset statistics">Reset Stats</button>
         </div>
 
         <a href="index.html" class="back-link">← Back to Home</a>
@@ -102,6 +103,7 @@
         const labelDisplay = document.getElementById('label');
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const resetStatsBtn = document.getElementById('resetStatsBtn');
         const modeButtons = document.querySelectorAll('.mode-btn');
         const pomodoroCountDisplay = document.getElementById('pomodoroCount');
         const totalTimeDisplay = document.getElementById('totalTime');
@@ -295,6 +297,16 @@
             updateDisplay();
         }
 
+        // Reset stats
+        function resetStats() {
+            if (confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
+                pomodoroCount = 0;
+                totalMinutes = 0;
+                updateStatsDisplay();
+                saveStats();
+            }
+        }
+
         // Switch mode
         function switchMode(mode) {
             if (isRunning) {
@@ -322,6 +334,7 @@
         // Event listeners
         startBtn.addEventListener('click', toggleTimer);
         resetBtn.addEventListener('click', resetTimer);
+        resetStatsBtn.addEventListener('click', resetStats);
 
         modeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
