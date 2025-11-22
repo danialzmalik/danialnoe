@@ -1,6 +1,14 @@
 /* Reset and Base Styles */
 * {
     margin: 0;
+
+.content-box {
+    background-color: #1a1a1a;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #ca2626;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
     padding: 0;
     box-sizing: border-box;
 }
@@ -478,4 +486,9 @@ button.end-early-btn:active {
     button {
         width: 100%;
     }
+}
+
+/* Utility Classes */
+.text-left {
+    text-align: left;
 }
