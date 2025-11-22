@@ -16,6 +16,10 @@ body {
     padding: 2rem;
 }
 
+p {
+    text-align: left;
+}
+
 /* Container */
 .container {
     text-align: center;
