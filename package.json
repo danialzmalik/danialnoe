@@ -1,0 +1,26 @@
+{
+  "name": "danialnoe-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal website hub with apps and games",
+  "scripts": {
+    "dev": "pnpm --filter site dev",
+    "build": "pnpm --filter site build",
+    "build:all": "pnpm -r build",
+    "preview": "pnpm --filter site preview",
+    "clean": "pnpm -r exec rm -rf dist node_modules .astro",
+    "install:all": "pnpm install"
+  },
+  "keywords": [
+    "astro",
+    "react",
+    "typescript",
+    "tailwindcss"
+  ],
+  "author": "Danial Malik",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
