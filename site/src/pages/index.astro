@@ -1,16 +1,36 @@
 ---
-
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Danial Noe - Home">
+  <div class="text-center max-w-2xl w-full">
+    <h1 class="text-6xl font-bold mb-8">Hello World</h1>
+
+    <div class="flex flex-col gap-4">
+      <a 
+        href="/pomodoro" 
+        class="block bg-gray-800 text-white px-6 py-4 rounded-lg text-lg transition-colors hover:bg-gray-700"
+      >
+        🍅 Pomodoro Timer →
+      </a>
+
+      <a 
+        href="/rituals" 
+        class="block bg-gray-800 text-white px-6 py-4 rounded-lg text-lg transition-colors hover:bg-gray-700"
+      >
+        🕯 Rituals →
+      </a>
+
+      <a 
+        href="https://join1440.com/today" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="block bg-gray-800 text-white px-6 py-4 rounded-lg text-lg transition-colors hover:bg-gray-700"
+      >
+        1440 Today →
+      </a>
+    </div>
+
+    <p class="mt-12 text-gray-500 text-sm">More projects coming soon...</p>
+  </div>
+</BaseLayout>

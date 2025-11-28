@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = 'Danial Noe', description = 'Personal website and project hub' } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <nav class="fixed top-0 left-0 right-0 bg-gray-800 border-b border-gray-700 z-50">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-center gap-4 h-16">
+          <a 
+            href="/" 
+            class={`px-4 py-2 rounded text-sm transition-colors ${currentPath === '/' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
+          >
+            Home
+          </a>
+          <a 
+            href="/pomodoro" 
+            class={`px-4 py-2 rounded text-sm transition-colors ${currentPath === '/pomodoro' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
+          >
+            Pomodoro
+          </a>
+          <a 
+            href="/rituals" 
+            class={`px-4 py-2 rounded text-sm transition-colors ${currentPath === '/rituals' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
+          >
+            Rituals
+          </a>
+          <a 
+            href="/journal" 
+            class={`px-4 py-2 rounded text-sm transition-colors ${currentPath === '/journal' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
+          >
+            Journal
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="pt-20 min-h-screen flex items-center justify-center px-8 py-8">
+      <slot />
+    </main>
+  </body>
+</html>
