@@ -4,5 +4,57 @@ import PomodoroTimer from '../components/PomodoroTimer';
 ---
 
 <BaseLayout title="Pomodoro Timer - Danial Noe">
-  <PomodoroTimer client:load />
+  <div class="pomodoro-page">
+    <PomodoroTimer client:load />
+  </div>
 </BaseLayout>
+
+<style is:global>
+  .pomodoro-page {
+    width: 100%;
+    min-height: calc(100vh - 4rem);
+    background-color: #111827;
+    color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Override BaseLayout centering constraints */
+  body:has(.pomodoro-page) main {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2rem 0 !important;
+    min-height: 100vh;
+  }
+  
+  /* Add spacing between sections - force override global reset */
+  .pomodoro-page > div > div:nth-child(1) {
+    margin-bottom: 8rem !important; /* Header spacing */
+  }
+  
+  .pomodoro-page > div > div:nth-child(2) {
+    margin-bottom: 5rem !important; /* Mode selector spacing */
+  }
+  
+  .pomodoro-page > div > div:nth-child(3) {
+    margin-bottom: 6rem !important; /* Timer display spacing */
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+  
+  .pomodoro-page > div > div:nth-child(4) {
+    margin-bottom: 6rem !important; /* Controls spacing */
+  }
+  
+  .pomodoro-page > div > div:nth-child(5) {
+    margin-bottom: 5rem !important; /* Tasks section spacing */
+  }
+  
+  /* Add spacing to individual task items */
+  .pomodoro-page > div > div:nth-child(5) > div:nth-child(2) > div {
+    padding: 2rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+</style>

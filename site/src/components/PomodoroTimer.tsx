@@ -304,13 +304,13 @@ export default function PomodoroTimer() {
   }, [timeLeft]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto px-6 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">🍅 Pomodoro Timer</h1>
+      <div className="flex items-center justify-between mb-32">
+        <h1 className="text-4xl font-bold">🍅 Pomodoro Timer</h1>
         <button
           onClick={() => setShowSettings(true)}
-          className="p-2 hover:bg-gray-800 rounded-lg transition text-xl"
+          className="p-3 hover:bg-gray-800 rounded-lg transition-all text-2xl shadow-md hover:shadow-lg hover:scale-105"
           title="Settings"
         >
           ⚙️
@@ -318,15 +318,15 @@ export default function PomodoroTimer() {
       </div>
 
       {/* Mode Selector */}
-      <div className="flex gap-2 mb-8">
+      <div className="flex gap-3 mb-20">
         {(['pomodoro', 'shortBreak', 'longBreak'] as TimerMode[]).map(m => (
           <button
             key={m}
             onClick={() => switchMode(m)}
-            className={`flex-1 py-2 px-4 rounded-lg transition ${
+            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all shadow-md hover:shadow-lg ${
               mode === m
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-800 hover:bg-gray-700'
+                ? 'bg-blue-600 text-white shadow-blue-600/50 scale-105'
+                : 'bg-gray-800 hover:bg-gray-700 hover:scale-102'
             }`}
           >
             {m === 'pomodoro' ? 'Pomodoro' : m === 'shortBreak' ? 'Short Break' : 'Long Break'}
@@ -335,29 +335,31 @@ export default function PomodoroTimer() {
       </div>
 
       {/* Timer Display */}
-      <div className="text-center mb-8">
-        <div className="text-8xl font-bold mb-4">{formatTime(timeLeft)}</div>
-        <div className="text-2xl text-gray-400">{getTimerLabel()}</div>
+      <div className="text-center mb-24 py-12">
+        <div className="text-[10rem] font-black mb-8 leading-none tracking-tight" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          {formatTime(timeLeft)}
+        </div>
+        <div className="text-3xl font-medium text-gray-300">{getTimerLabel()}</div>
       </div>
 
       {/* Controls */}
-      <div className="flex gap-4 justify-center mb-12">
+      <div className="flex gap-4 justify-center mb-24">
         <button
           onClick={isRunning ? pauseTimer : startTimer}
-          className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition text-lg font-medium"
+          className="px-10 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all text-xl font-semibold shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/50 hover:scale-105"
         >
           {isRunning ? 'Pause' : 'Start'}
         </button>
         <button
           onClick={resetTimer}
-          className="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
+          className="px-10 py-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all text-xl font-medium shadow-lg hover:shadow-xl hover:scale-105"
         >
           Reset
         </button>
         {isRunning && mode === 'pomodoro' && (
           <button
             onClick={endEarly}
-            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition"
+            className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl transition-all text-xl font-medium shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/50 hover:scale-105"
           >
             End Early
           </button>
@@ -365,9 +367,9 @@ export default function PomodoroTimer() {
       </div>
 
       {/* Tasks */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Today's Focus Tasks</h2>
-        <div className="space-y-3">
+      <div className="mb-20">
+        <h2 className="text-2xl font-bold mb-8">Today's Focus Tasks</h2>
+        <div className="space-y-6">
           {tasks.map((task, index) => (
             <div
               key={task.id}
@@ -375,24 +377,24 @@ export default function PomodoroTimer() {
               onDragStart={() => handleDragStart(task.id)}
               onDragOver={(e) => handleDragOver(e, task.id)}
               onDragEnd={handleDragEnd}
-              className={`flex items-center gap-3 p-4 rounded-lg transition cursor-move ${
+              className={`flex items-center gap-5 p-8 rounded-xl transition-all cursor-move shadow-md hover:shadow-lg ${
                 !task.completed && task.text.trim() && task === getActiveTask()
-                  ? 'bg-blue-900/30 border-2 border-blue-600'
-                  : 'bg-gray-800'
+                  ? 'bg-blue-900/40 border-2 border-blue-500 shadow-blue-500/20 ring-2 ring-blue-400/30'
+                  : 'bg-gray-800 border-2 border-transparent hover:border-gray-700'
               } ${task.completed ? 'opacity-60' : ''} ${
-                draggedTaskId === task.id ? 'opacity-50' : ''
+                draggedTaskId === task.id ? 'opacity-50 scale-95' : ''
               }`}
             >
-              <div className="text-gray-500 cursor-grab active:cursor-grabbing">⋮⋮</div>
+              <div className="text-gray-500 text-xl cursor-grab active:cursor-grabbing select-none" style={{ lineHeight: '1' }}>⋮⋮</div>
               <button
                 onClick={() => toggleTaskComplete(task.id)}
-                className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition ${
+                className={`flex-shrink-0 w-7 h-7 rounded-md border-2 flex items-center justify-center transition-all ${
                   task.completed
-                    ? 'bg-blue-600 border-blue-600'
-                    : 'border-gray-600 hover:border-gray-500'
+                    ? 'bg-blue-600 border-blue-600 shadow-md'
+                    : 'border-gray-600 hover:border-blue-500 hover:bg-gray-700'
                 }`}
               >
-                {task.completed && '✓'}
+                {task.completed && <span className="text-lg">✓</span>}
               </button>
               <input
                 type="text"
@@ -410,22 +412,22 @@ export default function PomodoroTimer() {
       </div>
 
       {/* Stats */}
-      <div className="flex gap-4 items-center justify-center">
-        <div className="flex-1 bg-gray-800 rounded-lg p-6 text-center">
-          <div className="text-4xl font-bold text-blue-500 mb-2">
+      <div className="flex gap-5 items-stretch">
+        <div className="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 text-center shadow-lg border border-gray-700">
+          <div className="text-5xl font-black text-blue-400 mb-3">
             {stats.pomodorosCompleted}
           </div>
-          <div className="text-gray-400">Pomodoros</div>
+          <div className="text-gray-400 text-lg font-medium">Pomodoros</div>
         </div>
-        <div className="flex-1 bg-gray-800 rounded-lg p-6 text-center">
-          <div className="text-4xl font-bold text-blue-500 mb-2">
+        <div className="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 text-center shadow-lg border border-gray-700">
+          <div className="text-5xl font-black text-blue-400 mb-3">
             {stats.totalMinutes}
           </div>
-          <div className="text-gray-400">Minutes</div>
+          <div className="text-gray-400 text-lg font-medium">Minutes</div>
         </div>
         <button
           onClick={resetStats}
-          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm"
+          className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all font-medium shadow-md hover:shadow-lg border border-gray-700 hover:scale-105"
         >
           Reset Stats
         </button>
@@ -468,61 +470,61 @@ function SettingsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-2xl font-semibold">Timer Settings</h2>
-          <button onClick={onClose} className="hover:bg-gray-700 p-1 rounded text-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700">
+        <div className="flex items-center justify-between p-8 border-b border-gray-700">
+          <h2 className="text-3xl font-bold">Timer Settings</h2>
+          <button onClick={onClose} className="hover:bg-gray-700 p-2 rounded-lg text-3xl transition-all hover:scale-110">
             ×
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-8 space-y-6">
           <div>
-            <label className="block mb-2 font-medium">Pomodoro Duration (minutes)</label>
+            <label className="block mb-3 font-semibold text-lg">Pomodoro Duration (minutes)</label>
             <input
               type="number"
               min="1"
               max="60"
               value={pomodoro}
               onChange={(e) => setPomodoro(Number(e.target.value))}
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg outline-none focus:border-blue-500"
+              className="w-full px-5 py-3 bg-gray-900 border border-gray-700 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all text-lg shadow-inner"
             />
           </div>
           <div>
-            <label className="block mb-2 font-medium">Short Break Duration (minutes)</label>
+            <label className="block mb-3 font-semibold text-lg">Short Break Duration (minutes)</label>
             <input
               type="number"
               min="1"
               max="30"
               value={shortBreak}
               onChange={(e) => setShortBreak(Number(e.target.value))}
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg outline-none focus:border-blue-500"
+              className="w-full px-5 py-3 bg-gray-900 border border-gray-700 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all text-lg shadow-inner"
             />
           </div>
           <div>
-            <label className="block mb-2 font-medium">Long Break Duration (minutes)</label>
+            <label className="block mb-3 font-semibold text-lg">Long Break Duration (minutes)</label>
             <input
               type="number"
               min="1"
               max="60"
               value={longBreak}
               onChange={(e) => setLongBreak(Number(e.target.value))}
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg outline-none focus:border-blue-500"
+              className="w-full px-5 py-3 bg-gray-900 border border-gray-700 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all text-lg shadow-inner"
             />
           </div>
         </div>
 
-        <div className="flex gap-3 p-6 border-t border-gray-700">
+        <div className="flex gap-4 p-8 border-t border-gray-700">
           <button
             onClick={handleSave}
-            className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-medium"
+            className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all font-semibold text-lg shadow-lg shadow-blue-600/30 hover:shadow-xl hover:scale-105"
           >
             Save Settings
           </button>
           <button
             onClick={onClose}
-            className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+            className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition-all font-medium text-lg shadow-lg hover:shadow-xl hover:scale-105"
           >
             Cancel
           </button>
