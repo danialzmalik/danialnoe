@@ -165,7 +165,6 @@ export function TrendCharts({ entries }: TrendChartsProps) {
     );
 
     // Most productive day
-    const orderedDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const maxDay = Object.entries(dayOfWeekDistribution).reduce(
       (max, [day, minutes]) => minutes > max.minutes ? { day, minutes } : max,
       { day: '', minutes: 0 }

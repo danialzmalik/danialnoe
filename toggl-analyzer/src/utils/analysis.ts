@@ -8,7 +8,6 @@ import type {
   PivotResult,
   PivotCell,
   PivotField,
-  AggregationType,
 } from '../types';
 
 /**
