@@ -7,15 +7,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h1 class="text-6xl font-bold mb-8">Hello World</h1>
 
     <div class="flex flex-col gap-4">
-      <a 
-        href="/pomodoro" 
-        class="block bg-gray-800 text-white px-6 py-4 rounded-lg text-lg transition-colors hover:bg-gray-700"
-      >
-        🍅 Pomodoro Timer →
-      </a>
-
-      <a 
-        href="/rituals" 
+      <a
+        href="/rituals"
         class="block bg-gray-800 text-white px-6 py-4 rounded-lg text-lg transition-colors hover:bg-gray-700"
       >
         🕯 Rituals →
@@ -30,63 +23,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         1440 Today →
       </a>
 
-      <div id="sun-times" class="bg-gray-800 text-white px-6 py-4 rounded-lg text-lg">
-        <div class="font-semibold mb-1">🌅 NYC Sun Times</div>
-        <div class="text-gray-400 text-base">Loading...</div>
-      </div>
+      <a
+        href="/utilities"
+        class="block bg-gray-800 text-white px-6 py-4 rounded-lg text-lg transition-colors hover:bg-gray-700"
+      >
+        🛠️ Utilities →
+        <span class="block text-sm text-gray-400 mt-1">Pomodoro, Toggl Analyzer, Sun Times & more</span>
+      </a>
     </div>
 
     <p class="mt-12 text-gray-500 text-sm">More projects coming soon...</p>
   </div>
-
-  <script>
-    // NYC coordinates
-    const NYC_LAT = 40.7128;
-    const NYC_LNG = -74.0060;
-
-    async function fetchSunTimes() {
-      try {
-        const response = await fetch(
-          `https://api.sunrise-sunset.org/json?lat=${NYC_LAT}&lng=${NYC_LNG}&formatted=0`
-        );
-        const data = await response.json();
-        
-        if (data.status === 'OK') {
-          // Convert UTC times to NYC local time
-          const sunrise = new Date(data.results.sunrise);
-          const sunset = new Date(data.results.sunset);
-          
-          const formatTime = (date: Date) => {
-            return date.toLocaleTimeString('en-US', {
-              timeZone: 'America/New_York',
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            });
-          };
-          
-          const sunTimesDiv = document.getElementById('sun-times');
-          if (sunTimesDiv) {
-            sunTimesDiv.innerHTML = `
-              <div class="font-semibold mb-1">🌅 NYC Sun Times</div>
-              <div class="text-base">Sunrise: ${formatTime(sunrise)}</div>
-              <div class="text-base">Sunset: ${formatTime(sunset)}</div>
-            `;
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching sun times:', error);
-        const sunTimesDiv = document.getElementById('sun-times');
-        if (sunTimesDiv) {
-          sunTimesDiv.innerHTML = `
-            <div class="font-semibold mb-1">🌅 NYC Sun Times</div>
-            <div class="text-red-400 text-base">Unable to load sun times</div>
-          `;
-        }
-      }
-    }
-
-    // Fetch sun times when page loads
-    fetchSunTimes();
-  </script>
 </BaseLayout>
